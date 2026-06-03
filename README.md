@@ -1,132 +1,55 @@
 # tcl-tv-wallpaper-engine
 
-PowerShell 脚本 + Android TV 桥接 APK。在 TCL **Android 9 / armeabi-v7a** 上 sideload Wallpaper Engine **2.7.4**。
+TCL Android 9 电视上的 Wallpaper Engine 2.7.4 部署工具链。
 
-**实测机型：** TCL 55A30-7CD6（A972T01），API 28，1920×1080，固件 `V8-A972T01-LF1V424`。
+目标平台：TCL 55A30-7CD6（A972T01），API 28，armeabi-v7a，1920×1080，固件 `V8-A972T01-LF1V424`。
 
-仓库不含 WE 安装包，自行准备 2.7.4 APKM。
+## 实现
 
-## 依赖
+**TCL renew 安装通道** — `install-tv-apk-renew.ps1` 通过 `com.tcl.packageinstaller.service.renew/.PackageInstallerService` 安装 APK，绕过 `install_switch_flag: 0` 对 `adb install` 的拦截。安装结果从 logcat `InstallAppProgressAPI28` 的 `returnCode` 读取。
 
-- Windows，PowerShell 5.1+
-- Android SDK `platform-tools`、`build-tools`（脚本写死 30.0.3 路径，按本机改）
-- JDK 11+
-- `tools/apktool.jar`（[Apktool releases](https://github.com/iBotPeaches/Apktool/releases)）
+**APKM 单包重建** — `build-we-274-v7a.ps1` 用 apktool 解包 2.7.4 base，清除 `requiredSplitTypes` / `com.android.vending.splits*`，写入 v7a split 里的 `libscenejni.so`，重打包签名。输出 `wallpaper-engine-2.7.4-v7a.apk`（versionCode 4240）。
 
-## 配置
+**APKM 下载** — `fetch-we-274.ps1`，CDN 直链，断点续传。
 
-`scripts/tcl-tv-spec.json` — 部署前改 `adb.ip`、`adb.port`。
+**统一部署** — `setup-tcl-wallpaper.ps1` / `install-we-tv.ps1`：adb 推包、renew 安装、可选 mpkg 推送。
 
-## 命令
+**桥接 APK** — `tcl-wallpaper/`（`com.tclsystemfinder.wallpaper`）：Leanback UI，扫描存储中的 `.mpkg`，复制到 `/sdcard/Download/`，拉起 WE import intent。
 
-```powershell
-cd scripts
+**adb 封装** — `adb-tv.ps1`，按 `tcl-tv-spec.json` 区分 emu / tv 目标。
 
-# 下载 APKM → firmware/apk/，解包到 we274/
-.\fetch-we-274.ps1
+**模拟器 AVD** — `setup-android-tv.ps1`、`recreate-tcl-avd.ps1`、`start-emulator-tcl.ps1`，API 28 Android TV x86，用于桥接和 mpkg 拷贝流程。
 
-# 需要 we274/base.apk + we274/split_config.armeabi_v7a.apk
-.\build-we-274-v7a.ps1
-
-# 桥接 + WE + mpkg（可选）
-.\setup-tcl-wallpaper.ps1 -Target tv -Launch
-```
-
-只装 WE：
-
-```powershell
-.\install-we-tv.ps1 -Launch
-```
-
-电视上：WE → Import file → `/sdcard/Download/*.mpkg`。
-
-## 安装通道
-
-本机固件上 `adb install` 被拦：
-
-```
-install_switch_flag: 0
-```
-
-走 `install-tv-apk-renew.ps1`：推到 `/sdcard/Download/`，调系统服务：
-
-```
-am startservice \
-  -a com.tcl.packageinstaller.service.renew.PackageInstallerService \
-  -n com.tcl.packageinstaller.service.renew/.PackageInstallerService \
-  --es uri file:///sdcard/Download/<apk> \
-  --es currentPackageName <pkg> \
-  --es version_code <code>
-```
-
-成功标志：logcat 里 `InstallAppProgressAPI28` 的 `returnCode == 0`。依赖包名 `com.tcl.packageinstaller.service.renew`，非通用 Android 接口。
-
-`enable-tcl-install.ps1` 在测试机上未改变上述行为。
-
-## APKM 处理
-
-APKMirror 的 2.7.4 是 APKM：
-
-| 文件 | |
-|------|---|
-| `base.apk` | dex，约 74 MB |
-| `split_config.armeabi_v7a.apk` | `lib/armeabi-v7a/libscenejni.so` |
-
-| 现象 | 原因 |
-|------|------|
-| `UnsatisfiedLinkError: libscenejni.so` | 只装了 base |
-| `Expected base APK, but found split config.armeabi_v7a` | 合并时 split manifest 覆盖 base |
-| 安装 session status **4** | manifest 仍带 `requiredSplitTypes="base__abi"` |
-| `unknown reloc type 17` | WE 2.8.x + API 28 |
-
-与只 zip 合并不清 manifest 的工具同类问题，参考 [AntiSplit-M](https://github.com/AbdurazaaqMohammed/AntiSplit-M) 关于 split metadata 的说明。
-
-`build-we-274-v7a.ps1` 步骤：
-
-1. `apktool d` base
-2. 删 `requiredSplitTypes`、`splitTypes`、`com.android.vending.splits*`
-3. `extractNativeLibs="true"`
-4. 从 v7a split 拷 `libscenejni.so`
-5. `apktool b` → zipalign → sign
-
-版本固定 **4240**。API 28 不要用 Play 当前 2.8.x。
-
-产物：`firmware/apk/wallpaper-engine-2.7.4-v7a.apk`（约 82 MB，gitignore）。
-
-## 模拟器
-
-`setup-android-tv.ps1` 建的是 x86 AVD，WE 本体跑不了；桥接和 mpkg 拷贝可测：
-
-```powershell
-.\setup-tcl-wallpaper.ps1 -Target emu -Launch
-```
+**设备常量** — `scripts/tcl-tv-spec.json`：adb 地址、包名、WE versionCode、renew service 组件名。
 
 ## 目录
 
 ```
 scripts/
-  tcl-tv-spec.json
-  fetch-we-274.ps1
-  build-we-274-v7a.ps1
-  merge-we-apkm-v7a.py          # 仅 zip 合并，单独用不够
   install-tv-apk-renew.ps1
+  build-we-274-v7a.ps1
+  fetch-we-274.ps1
+  merge-we-apkm-v7a.py
   install-we-tv.ps1
   setup-tcl-wallpaper.ps1
   adb-tv.ps1
+  tcl-tv-spec.json
 tcl-wallpaper/
-firmware/apk/                   # 本地 APKM 目录，见 README.txt
+firmware/apk/          # 本地 APKM / 产物目录（gitignore）
 ```
 
-运维细节：[TCL_WALLPAPER.md](TCL_WALLPAPER.md)。
+## 测试记录
 
-## 验证
+| 项 | 结果 |
+|----|------|
+| renew 安装 WE 4240 | `returnCode == 0` |
+| `BrowseActivity` 启动 | 正常，无 `libscenejni.so` 缺失 |
+| 桥接 APK renew 安装 | 正常 |
+| WE 2.8.x (4354) on API 28 | native `unknown reloc type 17` |
+| zip 合并 APKM（未清 manifest） | renew 安装 status 4 |
 
-```powershell
-adb shell dumpsys package io.wallpaperengine.weclient | findstr versionCode
-adb shell am start -n io.wallpaperengine.weclient/.BrowseActivity
-adb logcat -s qinliang:* PackageInstaller:*
-```
+WE 安装包与 `.mpkg` 不进仓库。
 
 ## License
 
-MIT（脚本与桥接 APK）。Wallpaper Engine 及 workshop 资源需自行合法获取。
+MIT
