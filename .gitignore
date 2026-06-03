@@ -1,0 +1,82 @@
+# --- Wallpaper Engine (not redistributed) ---
+firmware/apk/*.apk
+firmware/apk/*.idsig
+firmware/apk/*.signed
+firmware/apk/we274/
+firmware/apk/we274_decode/
+firmware/apk/we_decode/
+firmware/apk/*-unsigned.apk
+firmware/apk/*-aligned.apk
+*.mpkg
+
+# --- Large / local-only trees ---
+kernel-src/
+lightos/
+lighttv/
+we-ref/
+we-go-ref/
+we-rust-ref/
+firmware/*.img
+firmware/*.zip
+firmware/*.bin
+ota-boot-only/
+exploit/
+payload/
+tv-dump/
+sitatvservice_dump/
+libsitatv_dump/
+tcl-apks/
+pkg_extracted/
+tmp_*/
+extracted/
+tex_test/
+picture/
+
+# --- APK / firmware drops at repo root ---
+*.apk
+*.apkm
+*.apks
+
+# --- Android build ---
+tcl-wallpaper/.gradle/
+tcl-wallpaper/**/build/
+tcl-wallpaper/local.properties
+.gradle/
+local.properties
+
+# --- Logs, dumps, scratch ---
+*.log
+*_log.txt
+*_err*.txt
+*_out*.txt
+run_log.txt
+dump_*.txt
+*_dump.txt
+*_symbols.txt
+*_disasm.txt
+engine_*.txt
+tex_log.txt
+debug_match.py
+render_test.py
+we_desktop_test.py
+analyze_*.py
+check*.py
+extract*.py
+capture_*.py
+capture_*.ps1
+screenshot*.png
+extracted_test.png
+
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+.vscode/
+*.swp
+*~
+
+# --- Secrets (just in case) ---
+.env
+*.keystore
+!debug.keystore.example

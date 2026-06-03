@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TCL 壁纸助手</string>
+    <string name="status_we_ok">已安装 Wallpaper Engine</string>
+    <string name="status_we_missing">未安装 Wallpaper Engine — 请将 armeabi-v7a APK 放入 Download 后点「安装官方引擎」</string>
+    <string name="btn_open_we">打开 Wallpaper Engine</string>
+    <string name="btn_install_we">安装官方引擎 (Download 内 APK)</string>
+    <string name="btn_rescan">重新扫描 mpkg</string>
+    <string name="hint_import">导入：官方 app → Import file → Download 目录</string>
+</resources>

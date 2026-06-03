@@ -1,0 +1,41 @@
+﻿{
+  "model": "x32a0",
+  "chipset": "x32a0",
+  "soc": "Amlogic tl1",
+  "cpu": "ARM Cortex-A55 x4",
+  "androidVersion": "9",
+  "apiLevel": 28,
+  "ramMb": 1497,
+  "storageMb": 8192,
+  "display": {
+    "width": 1920,
+    "height": 1080,
+    "density": 240,
+    "profile": "tv_1080p",
+    "note": "真机当前 wm size 1920x1080 density 240；面板可能 4K 但系统 UI 1080p"
+  },
+  "firmware": "PPR1.180610.011.20210121 dev-keys",
+  "avdName": "TCL_55A30_7CD6",
+  "adb": {
+    "ip": "192.168.1.100",
+    "port": 5555
+  },
+  "wallpaper": {
+    "wePackage": "io.wallpaperengine.weclient",
+    "bridgePackage": "com.tclsystemfinder.wallpaper",
+    "cpuAbi": "armeabi-v7a",
+    "apkArchHint": "APKMirror 选 armeabi-v7a 或 universal，勿用仅 arm64-v8a",
+    "downloadDirOnDevice": "/sdcard/Download",
+    "weApkLocalNames": [
+      "wallpaper-engine.apk",
+      "wallpaper-engine-2.7.4.apk",
+      "wallpaper-engine-2.6.9.apk"
+    ],
+    "bridgeApkRelative": "tcl-wallpaper\\app\\build\\outputs\\apk\\release\\app-release.apk"
+  },
+  "limits": [
+    "无法运行 TCL 真机 ROM，仅 AOSP Android TV 9",
+    "PC 模拟器为 x86，真机为 ARM armeabi-v7a，原生 SO 库不兼容",
+    "TCL 桌面/系统应用/ROOT 行为无法在模拟器完全复现"
+  ]
+}
