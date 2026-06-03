@@ -1,4 +1,10 @@
 ﻿{
+  "meta": {
+    "说明": "脚本读取下方 adb、wallpaper 等字段。改 IP/端口即可，勿删 functional 键名。",
+    "参考机型": "TCL 55A30-7CD6 / x32a0",
+    "参考固件": "V8-A972T01-LF1V424（Android 9, API 28）",
+    "维护": "与 README.md 同步"
+  },
   "model": "x32a0",
   "chipset": "x32a0",
   "soc": "Amlogic tl1",
@@ -12,30 +18,40 @@
     "height": 1080,
     "density": 240,
     "profile": "tv_1080p",
-    "note": "真机当前 wm size 1920x1080 density 240；面板可能 4K 但系统 UI 1080p"
+    "note": "真机 wm size 1920x1080 density 240；面板可能 4K，系统 UI 按 1080p 跑"
   },
   "firmware": "PPR1.180610.011.20210121 dev-keys",
   "avdName": "TCL_55A30_7CD6",
   "adb": {
     "ip": "192.168.1.100",
-    "port": 5555
+    "port": 5555,
+    "note": "改成你电视的局域网 IP；无线 adb 默认端口 5555"
   },
   "wallpaper": {
     "wePackage": "io.wallpaperengine.weclient",
     "bridgePackage": "com.tclsystemfinder.wallpaper",
+    "weVersionCode": 4240,
+    "weVersionName": "2.7.4",
     "cpuAbi": "armeabi-v7a",
-    "apkArchHint": "APKMirror 选 armeabi-v7a 或 universal，勿用仅 arm64-v8a",
+    "apkArchHint": "APKMirror 选 armeabi-v7a 或 universal，勿用仅 arm64-v8a 的包",
     "downloadDirOnDevice": "/sdcard/Download",
     "weApkLocalNames": [
-      "wallpaper-engine.apk",
+      "wallpaper-engine-2.7.4-v7a.apk",
       "wallpaper-engine-2.7.4.apk",
-      "wallpaper-engine-2.6.9.apk"
+      "wallpaper-engine.apk"
     ],
-    "bridgeApkRelative": "tcl-wallpaper\\app\\build\\outputs\\apk\\release\\app-release.apk"
+    "bridgeApkRelative": "tcl-wallpaper\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
+    "note": "WE 须为 2.7.4 重打包单 APK；2.8.x 在 API 28 上 native 不兼容"
+  },
+  "install": {
+    "renewService": "com.tcl.packageinstaller.service.renew/.PackageInstallerService",
+    "renewAction": "com.tcl.packageinstaller.service.renew.PackageInstallerService",
+    "note": "adb install 被 install_switch_flag 拦截时用 renew 通道，见 install-tv-apk-renew.ps1"
   },
   "limits": [
-    "无法运行 TCL 真机 ROM，仅 AOSP Android TV 9",
-    "PC 模拟器为 x86，真机为 ARM armeabi-v7a，原生 SO 库不兼容",
-    "TCL 桌面/系统应用/ROOT 行为无法在模拟器完全复现"
+    "无法刷入 TCL 真机 ROM，模拟器仅为 AOSP Android TV 9",
+    "模拟器 x86，真机 armeabi-v7a，带 ARM .so 的 APK 只能在真机测",
+    "TCL 桌面、Hotel Menu、install_switch 等行为模拟器无法完全复现",
+    "本仓库不包含 WE 安装包，APKM 需自行下载后本地 build"
   ]
 }
