@@ -53,3 +53,9 @@ WE 安装包与 `.mpkg` 不进仓库。
 ## License
 
 MIT
+
+## 真机截图
+
+TCL 55A30-7CD6，`V8-A972T01-LF1V424`，WE 2.7.4 BrowseActivity。
+
+![Wallpaper Engine on TCL TV](docs/we-tv-screenshot.png)
